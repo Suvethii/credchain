@@ -1,0 +1,6 @@
+{
+  "installCommand": "npm install --omit=dev --ignore-scripts",
+  "buildCommand": "",
+  "outputDirectory": "public",
+  "functions": { "api/pin.ts": { "maxDuration": 30 } }
+}

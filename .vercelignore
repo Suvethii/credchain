@@ -1,0 +1,9 @@
+# Upload only what the API needs. Everything else stays local.
+/*
+!api
+!lib
+!public
+!package.json
+!package-lock.json
+!tsconfig.json
+!vercel.json

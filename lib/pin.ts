@@ -13,6 +13,34 @@ export interface PinOptions {
   fetchImpl?: typeof fetch; // lets tests use a fake Pinata
 }
 
+/**
+ * CORS: lets the web app (on another address) call /api/pin from the browser.
+ * allowedOrigins is a comma-separated list, e.g. "https://credchain-web.vercel.app,http://localhost:5173".
+ * Empty = allow any origin (only for testing).
+ */
+export function corsHeaders(origin: string | null, allowedOrigins = ""): Record<string, string> {
+  const list = allowedOrigins.split(",").map((s) => s.trim()).filter(Boolean);
+  const allow = list.length === 0 ? "*" : origin && list.includes(origin) ? origin : "";
+  const h: Record<string, string> = {
+    "access-control-allow-methods": "POST, OPTIONS",
+    "access-control-allow-headers": "content-type",
+    "access-control-max-age": "86400",
+    vary: "Origin",
+  };
+  if (allow) h["access-control-allow-origin"] = allow;
+  return h;
+}
+
+/** Runs handlePin and adds the CORS headers. Answers the browser's OPTIONS "pre-check" too. */
+export async function handlePinWithCors(request: Request, opts: PinOptions & { allowedOrigins?: string }): Promise<Response> {
+  const cors = corsHeaders(request.headers.get("origin"), opts.allowedOrigins);
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  const res = await handlePin(request, opts);
+  const headers = new Headers(res.headers);
+  for (const [k, v] of Object.entries(cors)) headers.set(k, v);
+  return new Response(res.body, { status: res.status, headers });
+}
+
 function json(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status,

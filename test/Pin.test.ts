@@ -107,3 +107,33 @@ describe("/api/pin", function () {
     expect(await res.text()).to.not.contain("secret");
   });
 });
+
+describe("/api/pin CORS", function () {
+  const { corsHeaders, handlePinWithCors } = require("../lib/pin");
+
+  it("allows any origin when no list is set (testing)", function () {
+    expect(corsHeaders("http://localhost:5173", "")["access-control-allow-origin"]).to.equal("*");
+  });
+
+  it("allows only listed origins when a list is set", function () {
+    const list = "https://credchain-web.vercel.app,http://localhost:5173";
+    expect(corsHeaders("http://localhost:5173", list)["access-control-allow-origin"]).to.equal("http://localhost:5173");
+    expect(corsHeaders("https://evil.example", list)).to.not.have.property("access-control-allow-origin");
+  });
+
+  it("answers the browser's OPTIONS pre-check with 204", async function () {
+    const req = new Request("http://localhost/api/pin", { method: "OPTIONS", headers: { origin: "http://localhost:5173" } });
+    const res = await handlePinWithCors(req, { jwt: "x" });
+    expect(res.status).to.equal(204);
+    expect(res.headers.get("access-control-allow-methods")).to.contain("POST");
+  });
+
+  it("adds CORS headers to a normal upload response", async function () {
+    const form = new FormData();
+    form.append("file", new Blob([new TextEncoder().encode("not a pdf")]), "x.pdf");
+    const req = new Request("http://localhost/api/pin", { method: "POST", body: form, headers: { origin: "http://localhost:5173" } });
+    const res = await handlePinWithCors(req, { jwt: "x" });
+    expect(res.status).to.equal(415);
+    expect(res.headers.get("access-control-allow-origin")).to.equal("*");
+  });
+});

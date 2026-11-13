@@ -36,3 +36,4 @@ coverage.json
 .env*
 *secrets*
 hardhat.config.backup.ts
+.vercel
