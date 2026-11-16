@@ -110,7 +110,7 @@ vercel deploy --prod
 
 | Check | Result |
 |---|---|
-| Unit tests | 55 passing (contract 27, metadata 9, API 14, gateway 6, fuzz 2, gas 1) |
+| Unit tests | 59 passing (contract 27, metadata 9, API 14, gateway 6, fuzz 2, gas 1) |
 | Coverage (MiniCredChain) | 100% lines, 100% functions, 100% statements, 89% branches |
 | Fuzz | 25 random runs each: never transferable; revoked never returns to Valid |
 | Gas | `batchIssue` of 50 ≈ 10.7M gas, 35% of a 30M block |
